@@ -1,0 +1,16 @@
+{
+  "name": "股見 - 台灣股市洞察",
+  "short_name": "股見",
+  "description": "一個專為台灣股市設計的 Web 應用程式，結合即時市場數據與 AI 新聞分析，幫助使用者快速掌握市場動態並從新聞中洞察先機。",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#111113",
+  "theme_color": "#111113",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTMgMTdMOSAxMUwxMyAxNUwyMSA3IiBzdHJva2U9IiNGOTcwM0UiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTUgN0gyMVYxMyIgc3Ryb2tlPSIjRjk3MDNFIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

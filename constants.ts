@@ -1,0 +1,3 @@
+export const DEFAULT_STOCKS = ['2330', '2317', '2454', '2308', '2881'];
+export const REFRESH_INTERVAL = 15000; // 15 seconds
+export const LOGO_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTMgMTdMOSAxMUwxMyAxNUwyMSA3IiBzdHJva2U9IiNGOTcwM0UiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTUgN0gyMVYxMyIgc3Ryb2tlPSIjRjk3MDNFIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+';

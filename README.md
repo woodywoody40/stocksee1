@@ -1,11 +1,32 @@
-<div align="center">
+# 股見 - 台灣股市洞察
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+一個專為台灣股市設計的 Web 應用程式，結合即時市場數據與 AI 新聞分析，幫助使用者快速掌握市場動態並從新聞中洞察先機。
 
-  <h1>Built with AI Studio</h2>
+## ✨ 主要功能
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+-   **即時市場數據**: 獲取台灣證券交易所 (TWSE) 的即時股價資訊。
+-   **自訂關注列表**: 追蹤您感興趣的股票，建立個人化的投資組合。
+-   **詳細個股資訊**: 查看開盤、最高、最低、成交量等詳細交易數據。
+-   **AI 新聞分析**: 貼上任何財經新聞，利用 Google Gemini API 快速生成：
+    -   **重點摘要**: 提煉新聞核心內容。
+    -   **情緒分析**: 判斷新聞對股價的潛在影響是正面、負面還是中性。
+    -   **趨勢預測**: 預測股價可能的短期波動。
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## 🛠️ 技術棧
 
-</div>
+-   **前端**: React, TypeScript, Tailwind CSS
+-   **AI 模型**: Google Gemini API (`gemini-2.5-flash`)
+
+## 🚀 部署與設定
+
+這個專案是一個純前端應用，可以直接部署到任何靜態網站託管服務，例如 Cloudflare Pages, Vercel, 或 Netlify。
+
+### AI 功能設定
+
+本應用的 AI 新聞分析功能需要使用 Google Gemini API。您需要在應用程式的「AI 新聞分析」頁面中，輸入您自己的 Google Gemini API 金鑰。
+
+1.  前往 [Google AI Studio](https://aistudio.google.com/app/apikey) 取得您的 API 金鑰。
+2.  將金鑰複製並貼到應用程式「AI 新聞分析」頁面上方的輸入框中。
+3.  點擊「儲存金鑰」。您的金鑰將會被安全地儲存在您的瀏覽器本地儲存空間 (Local Storage) 中，方便您下次使用，不會上傳到任何伺服器。
+
+**重要提示**: 請妥善保管您的 API 金鑰，不要與他人分享。
