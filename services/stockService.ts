@@ -1,5 +1,7 @@
 
+
 import { Stock, HistoricalDataPoint } from '../types';
+import { getProxiedUrl } from './proxyHelper';
 
 // Interface for the structure of a single stock object from the TWSE getStockInfo API response
 interface TwseStock {
@@ -17,7 +19,7 @@ interface TwseStock {
  * Fetches real-time stock data from the Taiwan Stock Exchange (TWSE) API.
  * Due to browser CORS (Cross-Origin Resource Sharing) policies, we must use a proxy
  * to fetch data from the TWSE domain. This function routes the request through a
- * public CORS proxy to enable access.
+ * configured CORS proxy to enable access.
  * @param codes - An array of stock codes to fetch data for.
  * @returns A promise that resolves to an array of Stock objects.
  */
@@ -29,8 +31,7 @@ export const fetchStockData = async (codes: string[]): Promise<Stock[]> => {
     const query = codes.flatMap(code => [`tse_${code}.tw`, `otc_${code}.tw`]).join('|');
     const apiUrl = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=${query}&json=1&delay=0&_=${Date.now()}`;
     
-    // Use a more reliable CORS proxy
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+    const proxyUrl = getProxiedUrl(apiUrl);
 
     try {
         const response = await fetch(proxyUrl);
@@ -131,7 +132,7 @@ export const fetchHistoricalData = async (code: string): Promise<HistoricalDataP
                 return currentSource.getUrl(sourceKey === 'TSE' ? year : rocYear, month);
             });
 
-            const responses = await Promise.all(urls.map(url => fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`)));
+            const responses = await Promise.all(urls.map(url => fetch(getProxiedUrl(url))));
             let combinedData: any[] = [];
 
             for (const response of responses) {

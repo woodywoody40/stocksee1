@@ -2,9 +2,10 @@ import React from 'react';
 
 interface SparklineProps {
     data: number[];
+    isPositive: boolean;
 }
 
-const Sparkline: React.FC<SparklineProps> = ({ data }) => {
+const Sparkline: React.FC<SparklineProps> = ({ data, isPositive }) => {
   // Ensure we have at least two points to draw a line
   if (!data || data.length < 2) {
     return (
@@ -14,7 +15,6 @@ const Sparkline: React.FC<SparklineProps> = ({ data }) => {
     );
   }
 
-  const isPositive = data[data.length - 1] >= data[0];
   const color = isPositive ? 'rgba(239, 68, 68, 0.9)' : 'rgba(34, 197, 94, 0.9)'; // Red 500, Green 500
   
   const gradientId = isPositive ? 'positive-spark-gradient' : 'negative-spark-gradient';

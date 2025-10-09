@@ -1,5 +1,6 @@
 import { TW_STOCKS } from '../data/tw_stocks';
 import { StockListItem } from '../types';
+import { getProxiedUrl } from './proxyHelper';
 
 const CACHE_KEY = 'full-stock-list';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
@@ -59,7 +60,7 @@ const parseIsinHtml = (html: string): StockListItem[] => {
  * @returns A promise that resolves to an array of parsed stock list items.
  */
 const fetchAndParseHtmlWithProxy = async (url: string): Promise<StockListItem[]> => {
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+    const proxyUrl = getProxiedUrl(url);
     const response = await fetch(proxyUrl);
     if (!response.ok) {
         throw new Error(`Failed to fetch from ${url} with status: ${response.status}`);

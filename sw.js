@@ -36,7 +36,8 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   // For API calls, always go to the network to ensure data is fresh.
-  if (event.request.url.includes('corsproxy.io')) {
+  const isApiCall = event.request.url.includes('corsproxy.io') || event.request.url.includes('workers.dev');
+  if (isApiCall) {
     event.respondWith(fetch(event.request));
     return;
   }
