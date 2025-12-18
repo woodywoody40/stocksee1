@@ -1,10 +1,10 @@
+
 import React, { useState, useCallback } from 'react';
 import Header from './components/Header';
 import MarketView from './components/MarketView';
 import AiAnalysisView from './components/AiAnalysisView';
 import { Tab, NewsArticle } from './types';
 import { fetchNewsWithGemini } from './services/geminiService';
-import useLocalStorage from './hooks/useLocalStorage';
 
 
 const App: React.FC = () => {
@@ -12,7 +12,6 @@ const App: React.FC = () => {
   const [analysisTarget, setAnalysisTarget] = useState<string | null>(null);
   const [analysisArticle, setAnalysisArticle] = useState<NewsArticle | null>(null);
   const [isFetchingNews, setIsFetchingNews] = useState(false);
-  const [apiKey, setApiKey] = useLocalStorage<string>('gemini-api-key', '');
   
   const handleTabChange = useCallback((tab: Tab) => {
     if (tab !== Tab.AI_Analysis) {
@@ -23,19 +22,14 @@ const App: React.FC = () => {
   }, []);
 
   const handleStartAnalysis = useCallback(async (stockName: string, stockCode: string) => {
-    if (!apiKey) {
-      alert("請先在「AI 新聞分析」頁面設定您的 Google Gemini API 金鑰。");
-      setActiveTab(Tab.AI_Analysis); // Switch to AI tab to show settings
-      return;
-    }
-
     setAnalysisTarget(stockName);
     setActiveTab(Tab.AI_Analysis);
     setIsFetchingNews(true);
     setAnalysisArticle(null);
 
     try {
-      const article = await fetchNewsWithGemini(apiKey, stockName, stockCode);
+      // FIX: Service now uses process.env.API_KEY directly; removed apiKey parameter.
+      const article = await fetchNewsWithGemini(stockName, stockCode);
       setAnalysisArticle(article);
 
     } catch (error) {
@@ -49,18 +43,16 @@ const App: React.FC = () => {
     } finally {
       setIsFetchingNews(false);
     }
-  }, [apiKey]);
+  }, []);
 
 
   return (
     <div className="min-h-screen font-sans bg-background-light dark:bg-background-dark">
       <Header activeTab={activeTab} setActiveTab={handleTabChange} />
       <main className="p-4 sm:p-6 lg:p-8">
-        {activeTab === Tab.Market && <MarketView apiKey={apiKey} onStartAnalysis={handleStartAnalysis} />}
+        {activeTab === Tab.Market && <MarketView onStartAnalysis={handleStartAnalysis} />}
         {activeTab === Tab.AI_Analysis && (
           <AiAnalysisView 
-            apiKey={apiKey}
-            setApiKey={setApiKey}
             analysisTarget={analysisTarget} 
             isFetchingNews={isFetchingNews}
             initialArticle={analysisArticle}

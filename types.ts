@@ -1,5 +1,4 @@
 
-
 export interface Stock {
   code: string;
   name: string;
@@ -45,7 +44,6 @@ export interface StockListItem {
   alias?: string[];
 }
 
-// FIX: Export the `IndicatorPoint` interface for technical analysis data.
 export interface IndicatorPoint {
   date: string;
   value: number;
@@ -64,4 +62,27 @@ export interface FinancialAnalysis {
     data: QuarterlyFinancials[];
     summary: string;
     sources?: NewsSource[];
+}
+
+// Added missing interfaces for Future Simulator
+export interface UserProfile {
+  name: string;
+  personality: string;
+  interests: string;
+  petPeeves: string;
+}
+
+export interface SimulationScriptItem {
+  speaker: string;
+  mood: string;
+  text: string;
+}
+
+export interface SimulationResult {
+  scenario_title: string;
+  setting: string;
+  script: SimulationScriptItem[];
+  psychological_insight: string;
+  discussion_topic: string;
+  compatibility_score: number;
 }

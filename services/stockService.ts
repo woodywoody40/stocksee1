@@ -1,5 +1,4 @@
 
-
 import { Stock, HistoricalDataPoint } from '../types';
 import { getProxiedUrl } from './proxyHelper';
 
@@ -7,7 +6,7 @@ import { getProxiedUrl } from './proxyHelper';
 interface TwseStock {
     c: string; // code
     n: string; // name
-    z: string; // price
+    z: string; // current price
     v: string; // volume
     o: string; // open
     h: string; // high
@@ -16,12 +15,17 @@ interface TwseStock {
 }
 
 /**
+ * 安全的轉型浮點數，處理 "-", "", "null" 等異常狀況
+ */
+const safeParseFloat = (val: string | undefined | null, fallback: number = 0): number => {
+    if (!val || val === '-' || val === 'null') return fallback;
+    const cleaned = val.toString().replace(/,/g, '');
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? fallback : parsed;
+};
+
+/**
  * Fetches real-time stock data from the Taiwan Stock Exchange (TWSE) API.
- * Due to browser CORS (Cross-Origin Resource Sharing) policies, we must use a proxy
- * to fetch data from the TWSE domain. This function routes the request through a
- * configured CORS proxy to enable access.
- * @param codes - An array of stock codes to fetch data for.
- * @returns A promise that resolves to an array of Stock objects.
  */
 export const fetchStockData = async (codes: string[]): Promise<Stock[]> => {
     if (codes.length === 0) {
@@ -35,30 +39,25 @@ export const fetchStockData = async (codes: string[]): Promise<Stock[]> => {
 
     try {
         const response = await fetch(proxyUrl);
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error(`Proxy request failed with status ${response.status}:`, errorBody.substring(0, 500));
-            throw new Error(`Network response was not ok: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`Network response was not ok`);
         
-        const responseText = await response.text();
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (jsonError) {
-            console.error("Failed to parse stock data JSON from proxy. Response text:", responseText.substring(0, 500));
-            throw new Error("無法解析從證交所收到的資料。 API 可能暫時無法使用。");
-        }
+        const data = await response.json();
 
         if (!data || !data.msgArray || data.msgArray.length === 0) {
-            return []; // No data for the given codes, not an error.
+            return [];
         }
 
         const stocks: Stock[] = data.msgArray.map((item: TwseStock) => {
-            const price = parseFloat(item.z);
-            const yesterdayPrice = parseFloat(item.y);
+            const yesterdayPrice = safeParseFloat(item.y, 0);
+            // 如果 z (現價) 是 "-", 通常表示尚未成交，此時以昨收價當作參考現價
+            const price = safeParseFloat(item.z, yesterdayPrice);
+            const open = safeParseFloat(item.o, price);
+            const high = safeParseFloat(item.h, price);
+            const low = safeParseFloat(item.l, price);
+            const volume = safeParseFloat(item.v, 0);
+
             const change = price - yesterdayPrice;
-            const changePercent = yesterdayPrice !== 0 ? (change / yesterdayPrice) * 100 : 0;
+            const changePercent = yesterdayPrice > 0 ? (change / yesterdayPrice) * 100 : 0;
 
             return {
                 code: item.c,
@@ -66,36 +65,32 @@ export const fetchStockData = async (codes: string[]): Promise<Stock[]> => {
                 price: price,
                 change: parseFloat(change.toFixed(2)),
                 changePercent: parseFloat(changePercent.toFixed(2)),
-                open: parseFloat(item.o),
-                high: parseFloat(item.h),
-                low: parseFloat(item.l),
-                volume: parseInt(item.v, 10),
+                open: open,
+                high: high,
+                low: low,
+                volume: Math.floor(volume),
                 yesterdayPrice: yesterdayPrice,
             };
         });
 
-        const uniqueStocks = Array.from(new Map(stocks.map(stock => [stock.code, stock])).values());
-        return uniqueStocks;
+        return Array.from(new Map(stocks.map(stock => [stock.code, stock])).values());
 
     } catch (error) {
-        console.error("Failed to fetch real stock data via CORS proxy:", error);
-        throw new Error("無法從台灣證券交易所獲取即時資料。這可能是暫時性網路問題或 CORS Proxy 服務不穩定所致。");
+        console.error("Failed to fetch stock data:", error);
+        throw new Error("無法從證交所獲取資料，請稍後再試。");
     }
 };
 
-
 /**
- * Fetches historical daily stock data for the last ~30 days for technical analysis.
- * It tries fetching from TSE, OTC, and Emerging markets in sequence to find data.
- * @param code - The stock code.
- * @returns A promise that resolves to an array of HistoricalDataPoint objects.
+ * Fetches historical daily stock data.
  */
 export const fetchHistoricalData = async (code: string): Promise<HistoricalDataPoint[]> => {
     const today = new Date();
-    // Fetch data for the current month and the previous month to ensure we get ~30 days.
-    const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    const dates: Date[] = [];
+    for (let i = 0; i < 36; i++) {
+        dates.push(new Date(today.getFullYear(), today.getMonth() - i, 1));
+    }
     
-    // Define the different data sources and their properties.
     const sources = {
         TSE: {
             getUrl: (year: number, month: string) => `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=${year}${month}01&stockNo=${code}`,
@@ -110,7 +105,6 @@ export const fetchHistoricalData = async (code: string): Promise<HistoricalDataP
         EMERGING: {
             getUrl: (rocYear: number, month: string) => `https://www.tpex.org.tw/web/stock/emergingstock/historical/daily/EMDaily_result.php?l=zh-tw&d=${rocYear}/${month}&stkno=${code}`,
             getData: (json: any) => (Array.isArray(json.aaData) ? json.aaData : []),
-            // Emerging market uses weighted average price as there is no "closing" price.
             getClosePriceIndex: () => 4,
         }
     };
@@ -119,12 +113,9 @@ export const fetchHistoricalData = async (code: string): Promise<HistoricalDataP
     let sourceKey: keyof typeof sources | null = null;
 
     try {
-        // Sequentially try to fetch data from each source.
         for (const key of Object.keys(sources) as Array<keyof typeof sources>) {
             sourceKey = key;
             const currentSource = sources[sourceKey];
-            const dates = [today, lastMonthDate];
-
             const urls = dates.map(date => {
                 const year = date.getFullYear();
                 const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -137,67 +128,46 @@ export const fetchHistoricalData = async (code: string): Promise<HistoricalDataP
 
             for (const response of responses) {
                 if (response.ok) {
-                    const responseText = await response.text();
-                    try {
-                        const json = JSON.parse(responseText);
-                        combinedData.push(...currentSource.getData(json));
-                    } catch (e) {
-                        console.warn(`Failed to parse historical data for ${sourceKey}. URL: ${response.url}, Body:`, responseText.substring(0, 200));
-                    }
+                    const json = await response.json();
+                    combinedData.push(...currentSource.getData(json));
                 }
             }
             
             if (combinedData.length > 0) {
                 rawData = combinedData;
-                break; // Found data, stop searching.
+                break;
             } else {
-                sourceKey = null; // Reset if no data found.
+                sourceKey = null;
             }
         }
         
-        if (rawData.length === 0 || !sourceKey) {
-            throw new Error('No historical data found from TSE, OTC, or Emerging sources.');
-        }
+        if (rawData.length === 0 || !sourceKey) throw new Error('No data');
 
         const closePriceIndex = sources[sourceKey].getClosePriceIndex();
         const historicalPoints: HistoricalDataPoint[] = rawData
             .map(item => {
                 if (Array.isArray(item) && item.length > closePriceIndex) {
                     const date = item[0]?.trim();
-                    const closePriceStr = item[closePriceIndex];
-                    if (date && typeof closePriceStr === 'string') {
-                         return {
-                            date: date,
-                            close: parseFloat(closePriceStr.trim().replace(/,/g, '')),
-                        };
+                    const closeVal = safeParseFloat(item[closePriceIndex], 0);
+                    if (date && closeVal > 0) {
+                         return { date, close: closeVal };
                     }
                 }
                 return null;
             })
-            .filter((point): point is HistoricalDataPoint => point !== null && point.date != null && !isNaN(point.close) && point.close > 0);
+            .filter((p): p is HistoricalDataPoint => p !== null);
 
-        if (historicalPoints.length === 0) {
-            throw new Error('Could not parse any valid historical data points from the API response.');
-        }
-
-        // De-duplicate and sort the data.
         const uniquePoints = Array.from(new Map(historicalPoints.map(p => [p.date, p])).values());
-        
         uniquePoints.sort((a, b) => {
-            // Dates are in ROC format (e.g., "113/05/22").
             const dateA = new Date(a.date.replace(/(\d+)\/(\d+)\/(\d+)/, (_, y, m, d) => `${parseInt(y) + 1911}-${m}-${d}`));
             const dateB = new Date(b.date.replace(/(\d+)\/(\d+)\/(\d+)/, (_, y, m, d) => `${parseInt(y) + 1911}-${m}-${d}`));
             return dateB.getTime() - dateA.getTime();
         });
 
-        // Return the most recent 30 trading days.
-        return uniquePoints.slice(0, 30);
+        return uniquePoints;
 
     } catch (error) {
-        console.error(`Failed to fetch or parse historical data for ${code}:`, error);
-        if (error instanceof Error && error.message.includes('No historical data found')) {
-             throw new Error("無法從上市、上櫃或興櫃市場獲取此股票的歷史股價資料。");
-        }
-        throw new Error("無法獲取歷史股價資料。");
+        console.error("Historical data error:", error);
+        return [];
     }
 };

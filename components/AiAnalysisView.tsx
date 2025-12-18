@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { analyzeNews } from '../services/geminiService';
 import { AnalysisResult, NewsArticle, NewsSource } from '../types';
@@ -8,13 +9,6 @@ const LoadingIcon: React.FC<React.SVGProps<SVGSVGElement>> = ({ className, ...pr
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
 );
-
-const CheckIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-);
-
 
 const icons = {
   Positive: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-positive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
@@ -29,8 +23,6 @@ interface AiAnalysisViewProps {
     analysisTarget: string | null;
     isFetchingNews: boolean;
     initialArticle: NewsArticle | null;
-    apiKey: string;
-    setApiKey: (key: string) => void;
 }
 
 const AnalysisSkeleton: React.FC = () => (
@@ -63,34 +55,21 @@ const AnalysisSkeleton: React.FC = () => (
 );
 
 
-const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetchingNews, initialArticle, apiKey, setApiKey }) => {
+const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetchingNews, initialArticle }) => {
     const [newsText, setNewsText] = useState('');
     const [sources, setSources] = useState<NewsSource[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [inputApiKey, setInputApiKey] = useState(apiKey);
-    const [isKeySaved, setIsKeySaved] = useState(false);
     
     const analysisTriggeredForContent = useRef<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
-
-    const handleSaveKey = useCallback(() => {
-        setApiKey(inputApiKey);
-        setIsKeySaved(true);
-        setTimeout(() => setIsKeySaved(false), 2000);
-    }, [inputApiKey, setApiKey]);
 
     const handleAnalyze = useCallback(async (contentToAnalyze?: string) => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
         abortControllerRef.current = new AbortController();
-
-        if (!apiKey) {
-            setError('請先設定您的 Google Gemini API 金鑰。');
-            return;
-        }
 
         const text = contentToAnalyze || newsText;
         if (!text.trim()) {
@@ -102,7 +81,8 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
         setError(null);
         setResult(null);
         try {
-            const analysisResult = await analyzeNews(apiKey, text);
+            // FIX: Removed apiKey argument as it's now handled internally in the service.
+            const analysisResult = await analyzeNews(text);
             setResult(analysisResult);
         } catch (err) {
             if (err instanceof Error) {
@@ -115,7 +95,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
         } finally {
             setIsLoading(false);
         }
-    }, [newsText, apiKey]);
+    }, [newsText]);
 
     useEffect(() => {
         setResult(null);
@@ -155,44 +135,6 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
     
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-             <div className="bg-surface-light dark:bg-surface-dark p-4 sm:p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg">
-                <h3 className="text-base font-semibold text-on-surface-light dark:text-on-surface-dark">Gemini API 金鑰設定</h3>
-                <p className="text-xs text-secondary-light dark:text-secondary-dark mt-1">
-                    金鑰將安全地儲存在您的瀏覽器中，不會上傳至任何伺服器。 
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary/90 hover:underline">
-                        點此獲取金鑰
-                    </a>
-                </p>
-                <div className="relative mt-3">
-                    <input
-                        type="password"
-                        value={inputApiKey}
-                        onChange={(e) => setInputApiKey(e.target.value)}
-                        placeholder="在此貼上您的 API 金鑰"
-                        className="w-full pl-3 pr-28 py-2.5 bg-background-light dark:bg-background-dark border border-outline-light dark:border-outline-dark rounded-lg focus:ring-2 focus:ring-primary/80 focus:outline-none transition text-on-background-light dark:text-on-background-dark placeholder-secondary-light dark:placeholder-secondary-dark"
-                        aria-label="Gemini API Key Input"
-                    />
-                    <button
-                        onClick={handleSaveKey}
-                        disabled={isKeySaved}
-                        className={`absolute inset-y-1.5 right-1.5 flex justify-center items-center w-24 rounded-md text-sm font-semibold transition-all duration-300 ${
-                            isKeySaved 
-                                ? 'bg-negative text-white' 
-                                : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
-                        }`}
-                    >
-                        {isKeySaved ? (
-                            <div className="flex items-center gap-1.5">
-                                <CheckIcon className="w-5 h-5" />
-                                <span>已儲存</span>
-                            </div>
-                        ) : (
-                           '儲存金鑰'
-                        )}
-                    </button>
-                </div>
-            </div>
-
             <div className="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl border border-outline-light dark:border-outline-dark shadow-xl">
                  <div className="flex justify-between items-start mb-6">
                     <div>
@@ -220,12 +162,11 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                     />
                     <button
                         onClick={() => handleAnalyze()}
-                        disabled={isLoading || !newsText.trim() || !apiKey}
+                        disabled={isLoading || !newsText.trim()}
                         className="w-full flex justify-center items-center gap-2 bg-primary hover:bg-primary/90 text-on-primary font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-tertiary-light dark:disabled:bg-tertiary-dark disabled:cursor-not-allowed transform hover:scale-105 disabled:scale-100"
                     >
                         {isLoading ? <><LoadingIcon className="h-5 w-5 text-white" /> 分析中...</> : '開始分析'}
                     </button>
-                    {!apiKey && <p className="text-center text-sm text-positive/90">請先設定 API 金鑰以啟用分析功能。</p>}
                 </div>
             </div>
             

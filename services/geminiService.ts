@@ -1,7 +1,6 @@
 
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { AnalysisResult, NewsArticle, NewsSource, QuarterlyFinancials, FinancialAnalysis } from '../types';
+import { AnalysisResult, NewsArticle, NewsSource, QuarterlyFinancials, FinancialAnalysis, UserProfile, SimulationResult } from '../types';
 
 const ANALYSIS_SCHEMA = {
   type: Type.OBJECT,
@@ -22,12 +21,9 @@ const ANALYSIS_SCHEMA = {
   required: ["summary", "sentiment", "prediction"],
 };
 
-
-export const analyzeNews = async (apiKey: string, newsText: string): Promise<AnalysisResult> => {
-    if (!apiKey) {
-        throw new Error("請先在「AI 新聞分析」頁面設定您的 Google Gemini API 金鑰。");
-    }
-    const ai = new GoogleGenAI({ apiKey });
+// FIX: Always use process.env.API_KEY directly in functions as per Gemini API coding guidelines.
+export const analyzeNews = async (newsText: string): Promise<AnalysisResult> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const prompt = `你是一位專精於台灣股市的頂尖財經分析師。請僅根據以下提供的新聞文章，以繁體中文進行分析，並嚴格按照指定的 JSON 格式回傳結果。
 
@@ -44,7 +40,7 @@ ${newsText}
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -60,27 +56,15 @@ ${newsText}
     } catch (error) {
         console.error("Error analyzing news with Gemini API:", error);
         if (error instanceof Error) {
-           if (error.message.includes('API key not valid')) {
-               throw new Error('您提供的 API 金鑰無效，請檢查後再試。');
-           }
            throw new Error(`AI 分析失敗: ${error.message}`);
         }
         throw new Error("AI 分析時發生未知錯誤。");
     }
 };
 
-/**
- * Uses the Gemini API to find and return the text of a recent news article for a given stock.
- * @param apiKey The user's Google Gemini API key.
- * @param stockName The name of the stock.
- * @param stockCode The code of the stock.
- * @returns A promise that resolves to an object containing the news text and its sources.
- */
-export const fetchNewsWithGemini = async (apiKey: string, stockName: string, stockCode: string): Promise<NewsArticle> => {
-    if (!apiKey) {
-        throw new Error("請先在「AI 新聞分析」頁面設定您的 Google Gemini API 金鑰。");
-    }
-    const ai = new GoogleGenAI({ apiKey });
+// FIX: Always use process.env.API_KEY directly in functions as per Gemini API coding guidelines.
+export const fetchNewsWithGemini = async (stockName: string, stockCode: string): Promise<NewsArticle> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const prompt = `你是一位頂尖的財經新聞專家，專精於台灣股市的即時動態。你的任務是使用網路搜尋能力，為台灣股票「${stockName} (${stockCode})」找出**今天（過去 24 小時內）最重要的一篇**財經新聞。
 
@@ -90,11 +74,11 @@ export const fetchNewsWithGemini = async (apiKey: string, stockName: string, sto
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             contents: prompt,
             config: {
                 tools: [{googleSearch: {}}],
-                temperature: 0.1, // Factual but allows for good summarization
+                temperature: 0.1,
             },
         });
         
@@ -114,51 +98,18 @@ export const fetchNewsWithGemini = async (apiKey: string, stockName: string, sto
 
     } catch (error) {
          console.error("Error fetching news with Gemini API:", error);
-        if (error instanceof Error && error.message.includes('API key not valid')) {
-            throw new Error('您提供的 API 金鑰無效或已過期。');
-        }
         throw new Error("AI 搜尋新聞時發生錯誤，請稍後再試。");
     }
 };
 
+// FIX: Always use process.env.API_KEY directly in functions as per Gemini API coding guidelines.
+export const getAIFinancialAnalysis = async (stockName: string, stockCode: string): Promise<FinancialAnalysis> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const FINANCIAL_DATA_SCHEMA = {
-  type: Type.ARRAY,
-  items: {
-    type: Type.OBJECT,
-    properties: {
-      quarter: { type: Type.STRING, description: "季度，格式為 'YYYYQX'，例如 '2023Q4'" },
-      revenue: { type: Type.NUMBER, description: "單季營業收入（單位：億元台幣）" },
-      grossMargin: { type: Type.NUMBER, description: "單季毛利率（單位：%）" },
-      operatingMargin: { type: Type.NUMBER, description: "單季營業利益率（單位：%）" },
-      netMargin: { type: Type.NUMBER, description: "單季稅後淨利率（單位：%）" },
-      eps: { type: Type.NUMBER, description: "單季每股盈餘（EPS，單位：元）" },
-    },
-    required: ["quarter", "revenue", "grossMargin", "operatingMargin", "netMargin", "eps"],
-  },
-};
-
-
-/**
- * Fetches and analyzes financial data for a stock using a two-step Gemini process.
- * Step 1: Fetches structured quarterly financial data using Google Search.
- * Step 2: Generates a human-readable analysis based on the fetched data.
- * @param apiKey The user's Google Gemini API key.
- * @param stockName The name of the stock.
- * @param stockCode The code of the stock.
- * @returns A promise that resolves to a FinancialAnalysis object.
- */
-export const getAIFinancialAnalysis = async (apiKey: string, stockName: string, stockCode: string): Promise<FinancialAnalysis> => {
-    if (!apiKey) {
-        throw new Error("請設定 API 金鑰以啟用財務分析功能。");
-    }
-    const ai = new GoogleGenAI({ apiKey });
-
-    // --- Step 1: Fetch structured financial data ---
     const fetchDataPrompt = `你是一位頂尖的財經數據專家。請使用網路搜尋，為台灣股票「${stockName} (${stockCode})」找出最近 4 個季度的財報關鍵數據。
 
 你的回覆必須是**一個 JSON 陣列**，其中包含 4 個物件，每個物件代表一個季度。
-請**只回傳 JSON 陣列**，不要包含任何其他文字、解釋或 markdown 格式 (例如 \`\`\`json)。
+請**只回傳 JSON 陣列**，不要包含任何其他文字、解釋 or markdown 格式 (例如 \`\`\`json)。
 
 **JSON 物件結構與單位:**
 - \`quarter\`: string (格式為 'YYYYQX', e.g., '2023Q4')
@@ -173,7 +124,7 @@ export const getAIFinancialAnalysis = async (apiKey: string, stockName: string, 
     let sources: NewsSource[];
     try {
         const dataResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             contents: fetchDataPrompt,
             config: {
                 tools: [{ googleSearch: {} }],
@@ -182,7 +133,6 @@ export const getAIFinancialAnalysis = async (apiKey: string, stockName: string, 
         });
         
         let jsonText = dataResponse.text.trim();
-        // Defensive parsing: remove markdown fences if the model includes them despite instructions.
         if (jsonText.startsWith('```json')) {
             jsonText = jsonText.slice(7, -3).trim();
         } else if (jsonText.startsWith('```')) {
@@ -209,12 +159,11 @@ export const getAIFinancialAnalysis = async (apiKey: string, stockName: string, 
         throw new Error("AI 無法獲取結構化的財務數據，請稍後再試。");
     }
 
-    // --- Step 2: Generate analysis summary from the data ---
     const analysisPrompt = `你是一位專業的台灣股市分析師。請根據以下提供的 JSON 格式的季度財報數據，為股票「${stockName}」撰寫一段 150 字以內的簡潔財務趨勢分析。分析應涵蓋營收、獲利能力（毛利率、營業利益率）和每股盈餘（EPS）的趨勢。語氣需客觀、專業，適合一般投資人閱讀。\n\n財務數據：\n${JSON.stringify(financialData, null, 2)}`;
     
     try {
         const analysisResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             contents: analysisPrompt,
             config: {
                 thinkingConfig: { thinkingBudget: 0 },
@@ -225,5 +174,74 @@ export const getAIFinancialAnalysis = async (apiKey: string, stockName: string, 
     } catch (error) {
         console.error("Error generating financial analysis with Gemini:", error);
         throw new Error("AI 無法生成財務分析總結，請稍後再試。");
+    }
+};
+
+const SIMULATION_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    scenario_title: {
+      type: Type.STRING,
+      description: "為情境取一個吸引人的標題。"
+    },
+    setting: {
+      type: Type.STRING,
+      description: "情境背景描述。"
+    },
+    script: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          speaker: { type: Type.STRING },
+          mood: { type: Type.STRING },
+          text: { type: Type.STRING }
+        },
+        required: ["speaker", "mood", "text"]
+      },
+      description: "角色對話內容。"
+    },
+    psychological_insight: {
+      type: Type.STRING,
+      description: "互動心理分析。"
+    },
+    discussion_topic: {
+      type: Type.STRING,
+      description: "推薦討論話題。"
+    },
+    compatibility_score: {
+      type: Type.NUMBER,
+      description: "契合度分值。"
+    }
+  },
+  required: ["scenario_title", "setting", "script", "psychological_insight", "discussion_topic", "compatibility_score"],
+};
+
+// FIX: Added missing generateSimulation function and used process.env.API_KEY exclusively.
+export const generateSimulation = async (userA: UserProfile, userB: UserProfile): Promise<SimulationResult> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+    const prompt = `你是一位資深的心理分析師與劇作家。請根據以下兩人的性格特徵，模擬一個有趣的互動劇本情境。
+
+用戶 A: ${JSON.stringify(userA)}
+用戶 B: ${JSON.stringify(userB)}
+
+請使用繁體中文，並嚴格遵循指定的 JSON 格式。`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-preview",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: SIMULATION_SCHEMA,
+                temperature: 0.8,
+            },
+        });
+        
+        return JSON.parse(response.text) as SimulationResult;
+    } catch (error) {
+        console.error("Error generating simulation with Gemini API:", error);
+        throw new Error("AI 模擬生成失敗，請稍後再試。");
     }
 };

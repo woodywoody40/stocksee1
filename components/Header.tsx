@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tab } from '../types';
 import ThemeToggle from './ThemeToggle';
@@ -37,18 +38,17 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
             <img src={LOGO_DATA_URL} alt="股見 Logo" className="w-8 h-8" />
             <div className="flex items-baseline gap-2">
                 <h1 className="text-2xl font-bold text-on-surface-light dark:text-on-surface-dark tracking-wider">股見</h1>
-                <span className="text-xs text-secondary-light dark:text-secondary-dark">台灣股市洞察</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <nav className="flex items-center gap-2 w-full sm:w-auto">
+            <nav className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
               <button onClick={() => setActiveTab(Tab.Market)} className={getTabClass(Tab.Market)}>
                   <ChartBarIcon className="w-5 h-5" />
                   市場動態
               </button>
               <button onClick={() => setActiveTab(Tab.AI_Analysis)} className={getTabClass(Tab.AI_Analysis)}>
                   <SparklesIcon className="w-5 h-5" />
-                  AI 新聞分析
+                  AI 分析
               </button>
             </nav>
             <ThemeToggle />
