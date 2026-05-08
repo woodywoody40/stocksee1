@@ -15,7 +15,10 @@ export interface Stock {
 export interface AnalysisResult {
   summary: string;
   sentiment: 'Positive' | 'Negative' | 'Neutral';
-  prediction: 'Up' | 'Down' | 'Unchanged';
+  score: number; // 0 to 100
+  impact_analysis: string[]; // List of specific impact points
+  opportunities_risks: string;
+  related_sectors: string[];
 }
 
 export enum Tab {
@@ -61,28 +64,7 @@ export interface QuarterlyFinancials {
 export interface FinancialAnalysis {
     data: QuarterlyFinancials[];
     summary: string;
+    strengths: string[];
+    weaknesses: string[];
     sources?: NewsSource[];
-}
-
-// Added missing interfaces for Future Simulator
-export interface UserProfile {
-  name: string;
-  personality: string;
-  interests: string;
-  petPeeves: string;
-}
-
-export interface SimulationScriptItem {
-  speaker: string;
-  mood: string;
-  text: string;
-}
-
-export interface SimulationResult {
-  scenario_title: string;
-  setting: string;
-  script: SimulationScriptItem[];
-  psychological_insight: string;
-  discussion_topic: string;
-  compatibility_score: number;
 }

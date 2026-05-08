@@ -5,6 +5,7 @@ import MarketView from './components/MarketView';
 import AiAnalysisView from './components/AiAnalysisView';
 import { Tab, NewsArticle } from './types';
 import { fetchNewsWithGemini } from './services/geminiService';
+import { AnimatePresence, motion } from 'motion/react';
 
 
 const App: React.FC = () => {
@@ -28,7 +29,6 @@ const App: React.FC = () => {
     setAnalysisArticle(null);
 
     try {
-      // FIX: Service now uses process.env.API_KEY directly; removed apiKey parameter.
       const article = await fetchNewsWithGemini(stockName, stockCode);
       setAnalysisArticle(article);
 
@@ -47,17 +47,37 @@ const App: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen font-sans bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen font-sans bg-background-light dark:bg-background-dark text-on-background-light dark:text-on-background-dark transition-colors duration-300">
       <Header activeTab={activeTab} setActiveTab={handleTabChange} />
-      <main className="p-4 sm:p-6 lg:p-8">
-        {activeTab === Tab.Market && <MarketView onStartAnalysis={handleStartAnalysis} />}
-        {activeTab === Tab.AI_Analysis && (
-          <AiAnalysisView 
-            analysisTarget={analysisTarget} 
-            isFetchingNews={isFetchingNews}
-            initialArticle={analysisArticle}
-          />
-        )}
+      <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        <AnimatePresence mode="wait">
+          {activeTab === Tab.Market && (
+            <motion.div
+              key="market"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <MarketView onStartAnalysis={handleStartAnalysis} />
+            </motion.div>
+          )}
+          {activeTab === Tab.AI_Analysis && (
+            <motion.div
+              key="analysis"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AiAnalysisView 
+                analysisTarget={analysisTarget} 
+                isFetchingNews={isFetchingNews}
+                initialArticle={analysisArticle}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
        <footer className="text-center p-6 text-xs text-secondary-light dark:text-secondary-dark mt-8">
         股見 - 台灣股市洞察 © 2025. 所有資料僅供參考。

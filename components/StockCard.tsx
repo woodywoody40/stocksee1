@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Stock } from '../types';
 import Sparkline from './Sparkline';
 import { fetchHistoricalData } from '../services/stockService';
+import { Star } from 'lucide-react';
 
 interface StockCardProps {
     stock: Stock;
@@ -9,12 +10,6 @@ interface StockCardProps {
     onToggleWatchlist: (code: string) => void;
     onCardClick: (stock: Stock) => void;
 }
-
-const StarIcon: React.FC<React.SVGProps<SVGSVGElement> & { isFilled: boolean }> = ({ isFilled, ...props }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={isFilled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.5} {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-    </svg>
-);
 
 const ChartLoadingSkeleton: React.FC = () => (
     <div className="flex items-center justify-center h-full w-full">
@@ -98,7 +93,7 @@ const StockCard: React.FC<StockCardProps> = ({ stock, isWatched, onToggleWatchli
                         className="text-secondary-light dark:text-secondary-dark hover:text-brand-gold transition-colors p-1 -mr-1 -mt-1 z-20"
                         aria-label={isWatched ? `從關注列表移除 ${stock.name}` : `將 ${stock.name} 加入關注列表`}
                     >
-                        <StarIcon isFilled={isWatched} className={`w-6 h-6 ${isWatched ? 'text-brand-gold' : ''}`} />
+                        <Star className={`w-6 h-6 transition-transform ${isWatched ? 'text-brand-gold fill-brand-gold scale-110' : 'hover:scale-110'}`} />
                     </button>
                 </div>
                 <div className="mt-4 flex justify-between items-end gap-2">

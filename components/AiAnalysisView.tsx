@@ -2,21 +2,19 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { analyzeNews } from '../services/geminiService';
 import { AnalysisResult, NewsArticle, NewsSource } from '../types';
-
-const LoadingIcon: React.FC<React.SVGProps<SVGSVGElement>> = ({ className, ...props }) => (
-    <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" {...props}>
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-);
+import { Loader2, TrendingUp, TrendingDown, Minus, Smile, Frown, Meh, Percent, Link as LinkIcon, Zap, AlertTriangle, Blocks } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 const icons = {
-  Positive: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-positive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  Negative: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-negative" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  Neutral: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-secondary-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M14 10H10M14 14H10M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  Up: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-positive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>,
-  Down: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-negative" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" /></svg>,
-  Unchanged: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-secondary-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" /></svg>,
+  Positive: () => <Smile className="w-8 h-8 text-positive" />,
+  Negative: () => <Frown className="w-8 h-8 text-negative" />,
+  Neutral: () => <Meh className="w-8 h-8 text-secondary-dark" />,
+};
+
+const getScoreColor = (score: number) => {
+    if (score >= 70) return 'text-positive';
+    if (score <= 30) return 'text-negative';
+    return 'text-brand-orange';
 };
 
 interface AiAnalysisViewProps {
@@ -26,30 +24,25 @@ interface AiAnalysisViewProps {
 }
 
 const AnalysisSkeleton: React.FC = () => (
-    <div className="mt-8">
-        <h3 className="text-xl font-bold mb-4 text-primary pl-3 border-l-4 border-primary">AI 分析中...</h3>
-        <div className="space-y-6">
-            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-3 animate-pulse"></div>
+    <div className="mt-8 space-y-6">
+        <h3 className="text-xl font-bold flex items-center gap-2 text-primary">
+             <Loader2 className="w-5 h-5 animate-spin" />
+             AI 分析中...
+        </h3>
+        <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl border border-outline-light dark:border-outline-dark shadow-sm">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4 animate-pulse"></div>
+            <div className="space-y-3">
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full animate-pulse"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mt-2 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 animate-pulse"></div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4 animate-pulse"></div>
-                    <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
-                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse"></div>
-                    </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl border border-outline-light dark:border-outline-dark shadow-sm">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4 animate-pulse"></div>
+                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg">
-                     <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4 animate-pulse"></div>
-                    <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
-                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse"></div>
-                    </div>
-                </div>
-            </div>
+             ))}
         </div>
     </div>
 );
@@ -81,7 +74,6 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
         setError(null);
         setResult(null);
         try {
-            // FIX: Removed apiKey argument as it's now handled internally in the service.
             const analysisResult = await analyzeNews(text);
             setResult(analysisResult);
         } catch (err) {
@@ -124,31 +116,34 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
     if (isFetchingNews) {
         return (
             <div className="max-w-4xl mx-auto">
-                <div className="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl border border-outline-light dark:border-outline-dark shadow-xl flex flex-col items-center justify-center space-y-4 min-h-[400px]">
-                     <LoadingIcon className="h-8 w-8 text-primary animate-spin"/>
-                     <h3 className="text-lg font-semibold text-on-surface-light dark:text-on-surface-dark">AI 正在為您搜尋「{analysisTarget}」的最新新聞...</h3>
-                     <p className="text-secondary-light dark:text-secondary-dark text-sm">請稍候，過程可能需要一點時間。</p>
+                <div className="bg-surface-light dark:bg-surface-dark p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center space-y-6 min-h-[400px] border border-brand-orange/20">
+                     <Loader2 className="h-12 w-12 text-brand-orange animate-spin"/>
+                     <div className="text-center">
+                         <h3 className="text-xl font-bold text-on-surface-light dark:text-on-surface-dark mb-2">AI 正在蒐集「{analysisTarget}」的最新情報...</h3>
+                         <p className="text-secondary-light dark:text-secondary-dark text-sm">正在過濾市場雜訊，請稍候</p>
+                     </div>
                 </div>
             </div>
         );
     }
     
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <div className="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl border border-outline-light dark:border-outline-dark shadow-xl">
-                 <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 className="text-2xl font-bold text-primary">AI 新聞分析</h2>
-                        <p className="text-secondary-light dark:text-secondary-dark mt-1">
-                          {analysisTarget 
-                            ? `已自動帶入關於「${analysisTarget}」的最新聞，您也可手動修改內容。`
-                            : "從「市場動態」選擇股票，或在此貼上新聞，讓 AI 為您提煉重點。"
-                          }
-                        </p>
-                    </div>
+        <div className="max-w-4xl mx-auto space-y-8 pb-12">
+            <div className="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+                 <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-brand-orange flex items-center gap-2">
+                        <Zap className="w-6 h-6" />
+                        AI 深度新聞剖析
+                    </h2>
+                    <p className="text-secondary-light dark:text-secondary-dark mt-2 text-sm">
+                      {analysisTarget 
+                        ? `已自動帶入關於「${analysisTarget}」的最新聞，您也可手動修改內容或直接開始分析。`
+                        : "從「市場動態」選擇股票，或在此貼上新聞，讓 AI 為您提煉投資重點。"
+                      }
+                    </p>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-4">
                     <textarea
                         value={newsText}
                         onChange={(e) => setNewsText(e.target.value)}
@@ -157,68 +152,146 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                             ? `在此貼上或編輯關於「${analysisTarget}」的新聞文章全文...`
                             : "在此貼上新聞文章全文..."
                         }
-                        className="w-full h-48 p-4 bg-background-light dark:bg-background-dark border border-outline-light dark:border-outline-dark rounded-lg focus:ring-2 focus:ring-primary/80 focus:outline-none transition resize-y text-on-background-light dark:text-on-background-dark placeholder-secondary-light dark:placeholder-secondary-dark"
+                        className="w-full h-40 p-4 bg-background-light dark:bg-background-dark border border-outline-light dark:border-outline-dark rounded-xl focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange outline-none transition resize-y text-on-background-light dark:text-on-background-dark placeholder-secondary-light dark:placeholder-secondary-dark text-sm leading-relaxed"
                         disabled={isLoading}
                     />
                     <button
                         onClick={() => handleAnalyze()}
                         disabled={isLoading || !newsText.trim()}
-                        className="w-full flex justify-center items-center gap-2 bg-primary hover:bg-primary/90 text-on-primary font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-tertiary-light dark:disabled:bg-tertiary-dark disabled:cursor-not-allowed transform hover:scale-105 disabled:scale-100"
+                        className="w-full flex justify-center items-center gap-2 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-3 px-4 rounded-xl transition duration-300 disabled:bg-surface-dark-alt disabled:text-secondary-dark disabled:cursor-not-allowed shadow-md shadow-brand-orange/20"
                     >
-                        {isLoading ? <><LoadingIcon className="h-5 w-5 text-white" /> 分析中...</> : '開始分析'}
+                        {isLoading ? <><Loader2 className="w-5 h-5 animate-spin" /> 分析中...</> : '開始 AI 分析'}
                     </button>
                 </div>
             </div>
             
-            {isLoading && <AnalysisSkeleton />}
+            <AnimatePresence mode="wait">
+                {isLoading && (
+                    <motion.div key="loading" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <AnalysisSkeleton />
+                    </motion.div>
+                )}
 
-            {error && (
-                <div className="mt-6 bg-positive/10 border border-positive/30 text-positive p-4 rounded-2xl animate-fade-in">
-                    <h3 className="font-bold">分析失敗</h3>
-                    <p>{error}</p>
-                </div>
-            )}
-
-            {result && (
-                <div className="mt-8">
-                     <h3 className="text-xl font-bold mb-4 text-primary pl-3 border-l-4 border-primary">分析結果</h3>
-                    <div className="space-y-6">
-                        <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg animate-stagger-in" style={{animationDelay: '100ms'}}>
-                            <h4 className="font-semibold text-secondary-light dark:text-secondary-dark mb-2">重點摘要</h4>
-                            <p className="text-on-surface-light dark:text-on-surface-dark leading-relaxed">{result.summary}</p>
+                {error && !isLoading && (
+                    <motion.div key="error" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-negative/10 border border-negative/30 text-negative p-4 rounded-xl flex gap-3 items-start">
+                        <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                        <div>
+                            <h3 className="font-bold">分析失敗</h3>
+                            <p className="text-sm mt-1">{error}</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg animate-stagger-in" style={{animationDelay: '200ms'}}>
-                                <h4 className="font-semibold text-secondary-light dark:text-secondary-dark mb-4">情緒分析</h4>
-                                <div className="flex items-center gap-4">
+                    </motion.div>
+                )}
+
+                {result && !isLoading && (
+                    <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                        {/* Summary Card */}
+                        <div className="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl shadow-lg border border-brand-orange/20 relative overflow-hidden">
+                             <div className="absolute top-0 right-0 p-8 opacity-5">
+                                 <Zap className="w-32 h-32 text-brand-orange" />
+                             </div>
+                             <div className="relative z-10">
+                                <h4 className="font-bold text-lg text-brand-orange mb-3 flex items-center gap-2">
+                                     <SparklesIcon className="w-5 h-5" />
+                                     核心重點摘要
+                                </h4>
+                                <p className="text-on-surface-light dark:text-on-surface-dark leading-relaxed text-lg">
+                                    {result.summary}
+                                </p>
+                             </div>
+                        </div>
+
+                        {/* Top Metrics Row */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark flex items-center gap-6">
+                                <div className="p-4 bg-surface-dark-alt rounded-2xl">
                                     {icons[result.sentiment]()}
-                                    <span className="text-2xl font-bold text-on-surface-light dark:text-on-surface-dark">{ {Positive: '正面', Negative: '負面', Neutral: '中性'}[result.sentiment]}</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-secondary-light dark:text-secondary-dark mb-1 font-medium">整體情緒傾向</p>
+                                    <p className="text-2xl font-bold text-on-surface-light dark:text-on-surface-dark">
+                                        {{Positive: '偏向樂觀', Negative: '偏向悲觀', Neutral: '持平中性'}[result.sentiment]}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg animate-stagger-in" style={{animationDelay: '300ms'}}>
-                                <h4 className="font-semibold text-secondary-light dark:text-secondary-dark mb-4">潛在波動預測</h4>
-                                <div className="flex items-center gap-4">
-                                    {icons[result.prediction]()}
-                                    <span className="text-2xl font-bold text-on-surface-light dark:text-on-surface-dark">{ {Up: '上漲', Down: '下跌', Unchanged: '不變'}[result.prediction]}</span>
+                            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark flex items-center gap-6">
+                                <div className="p-4 bg-surface-dark-alt rounded-2xl">
+                                    <Percent className={`w-8 h-8 ${getScoreColor(result.score)}`} />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-secondary-light dark:text-secondary-dark mb-1 font-medium">AI 評級分數</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className={`text-3xl font-bold ${getScoreColor(result.score)}`}>
+                                            {result.score}
+                                        </p>
+                                        <span className="text-sm text-secondary-dark">/ 100</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
 
-            {sources.length > 0 && (
-                <div className="mt-8">
-                    <h3 className="text-xl font-bold mb-4 text-primary pl-3 border-l-4 border-primary">新聞來源</h3>
-                    <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-outline-light dark:border-outline-dark shadow-lg animate-stagger-in" style={{animationDelay: '400ms'}}>
-                        <ul className="space-y-3 list-disc list-inside">
+                        {/* Impact and Risks */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+                                <h4 className="font-bold text-on-surface-light dark:text-on-surface-dark mb-4 flex items-center gap-2">
+                                    <TrendingUp className="w-5 h-5 text-brand-gold" />
+                                    具體影響分析
+                                </h4>
+                                <ul className="space-y-3">
+                                    {result.impact_analysis.map((item, idx) => (
+                                        <li key={idx} className="flex gap-3 text-sm text-secondary-light dark:text-secondary-dark leading-relaxed">
+                                            <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-brand-gold mt-2"></span>
+                                            <span>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div className="space-y-6">
+                                <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+                                    <h4 className="font-bold text-on-surface-light dark:text-on-surface-dark mb-3 flex items-center gap-2">
+                                        <AlertTriangle className="w-5 h-5 text-brand-orange" />
+                                        機會與風險
+                                    </h4>
+                                    <p className="text-sm text-secondary-light dark:text-secondary-dark leading-relaxed">
+                                        {result.opportunities_risks}
+                                    </p>
+                                </div>
+                                {result.related_sectors.length > 0 && (
+                                    <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+                                        <h4 className="font-bold text-on-surface-light dark:text-on-surface-dark mb-3 flex items-center gap-2">
+                                            <Blocks className="w-5 h-5 text-primary" />
+                                            連動產業板塊
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {result.related_sectors.map((sector, idx) => (
+                                                <span key={idx} className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                                                    {sector}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {sources.length > 0 && !isLoading && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-4">
+                    <h3 className="text-sm font-bold text-secondary-light dark:text-secondary-dark mb-3 flex items-center gap-2 uppercase tracking-wider">
+                        <LinkIcon className="w-4 h-4" />
+                        相關新聞來源
+                    </h3>
+                    <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-outline-light dark:border-outline-dark shadow-sm">
+                        <ul className="space-y-2">
                             {sources.map((source, index) => (
-                                <li key={index} className="text-sm text-secondary-light dark:text-secondary-dark truncate">
+                                <li key={index} className="text-sm text-secondary-light dark:text-secondary-dark truncate flex items-center gap-2 relative pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-brand-orange before:rounded-full">
                                     <a 
                                         href={source.uri} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-primary hover:underline"
+                                        className="hover:text-brand-orange hover:underline transition-colors block truncate"
                                         title={source.title}
                                     >
                                         {source.title}
@@ -227,11 +300,18 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                             ))}
                         </ul>
                     </div>
-                </div>
+                </motion.div>
             )}
 
         </div>
     );
 };
 
+const SparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+    </svg>
+);
+
 export default React.memo(AiAnalysisView);
+

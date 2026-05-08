@@ -1,24 +1,12 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StockListItem } from '../types';
+import { Search, X } from 'lucide-react';
 
 interface SearchBarProps {
     stockList: StockListItem[];
     onSearch: (term: string) => void;
 }
-
-const SearchIcon: React.FC<React.SVGProps<SVGSVGElement>> = ({ className, ...props }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className || ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-);
-
-
-const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
 
 const SearchBar: React.FC<SearchBarProps> = ({ stockList, onSearch }) => {
     const [input, setInput] = useState('');
@@ -115,10 +103,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ stockList, onSearch }) => {
     };
 
     return (
-        <form onSubmit={handleFormSubmit} className="max-w-2xl mx-auto">
+        <form onSubmit={handleFormSubmit} className="max-w-2xl mx-auto w-full">
             <div className="relative" ref={searchContainerRef}>
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <SearchIcon className="text-secondary-light dark:text-secondary-dark" />
+                    <Search className="text-secondary-light dark:text-secondary-dark w-5 h-5" />
                 </div>
                 <input
                     type="text"
@@ -138,7 +126,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ stockList, onSearch }) => {
                            className="p-2 text-secondary-light dark:text-secondary-dark hover:text-on-surface-light dark:hover:text-on-surface-dark transition-colors rounded-full mr-1"
                            aria-label="清除搜尋"
                        >
-                           <CloseIcon className="w-5 h-5"/>
+                           <X className="w-5 h-5"/>
                        </button>
                    )}
                     <button

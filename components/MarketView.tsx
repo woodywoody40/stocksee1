@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { fetchStockData } from '../services/stockService';
 import { getFullStockList } from '../services/stockListService';
@@ -9,6 +9,8 @@ import { TW_STOCKS } from '../data/tw_stocks';
 import StockCard from './StockCard';
 import StockModal from './StockModal';
 import SearchBar from './SearchBar';
+import { motion } from 'motion/react';
+import { TrendingUp, TrendingDown, Activity, RefreshCcw } from 'lucide-react';
 
 const LoadingSpinner: React.FC = () => (
     <div className="flex justify-center items-center p-12 space-x-2">
@@ -16,12 +18,6 @@ const LoadingSpinner: React.FC = () => (
         <div className="w-3 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
         <div className="w-3 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
     </div>
-);
-
-const RefreshIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-    </svg>
 );
 
 const SectionHeader: React.FC<{ children: React.ReactNode; onRefresh?: () => void; isRefreshing?: boolean }> = ({ children, onRefresh, isRefreshing }) => (
@@ -36,7 +32,7 @@ const SectionHeader: React.FC<{ children: React.ReactNode; onRefresh?: () => voi
                 disabled={isRefreshing}
                 className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-full bg-surface-light dark:bg-surface-dark border border-outline-light dark:border-outline-dark hover:bg-primary/10 transition-colors disabled:opacity-50"
             >
-                <RefreshIcon className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 {isRefreshing ? '更新中' : '手動更新'}
             </button>
         )}
@@ -150,23 +146,37 @@ const MarketView: React.FC<MarketViewProps> = ({ onStartAnalysis }) => {
     const marketStocks = stocks.filter(stock => DEFAULT_STOCKS.includes(stock.code) && !watchlist.includes(stock.code));
     const searchResultStocks = searchTerm ? stocks.filter(stock => searchCodes.includes(stock.code)) : [];
 
+    // Dashboard metrics
+    const sortedByChange = useMemo(() => [...stocks].sort((a, b) => b.changePercent - a.changePercent), [stocks]);
+    const topGainer = sortedByChange.length > 0 ? sortedByChange[0] : null;
+    const topLoser = sortedByChange.length > 0 ? sortedByChange[sortedByChange.length - 1] : null;
+    
+    // Check if it's actually a gainer/loser
+    const actualGainer = topGainer && topGainer.changePercent > 0 ? topGainer : null;
+    const actualLoser = topLoser && topLoser.changePercent < 0 ? topLoser : null;
+
     const renderStockGrid = (stockList: Stock[]) => (
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
             {stockList.map((stock, index) => (
-                <div key={stock.code} className="animate-stagger-in" style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}>
+                <motion.div 
+                    key={stock.code} 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                >
                     <StockCard
                         stock={stock}
                         isWatched={watchlist.includes(stock.code)}
                         onToggleWatchlist={toggleWatchlist}
                         onCardClick={setSelectedStock}
                     />
-                </div>
+                </motion.div>
             ))}
         </div>
     );
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-10">
             <div className="flex flex-col gap-4">
                 <SearchBar stockList={fullStockList} onSearch={handleSearch} />
                 <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-secondary-light dark:text-secondary-dark font-bold">
@@ -181,6 +191,59 @@ const MarketView: React.FC<MarketViewProps> = ({ onStartAnalysis }) => {
                 <LoadingSpinner />
             ) : (
                 <div className="space-y-12">
+                     {!searchTerm && (actualGainer || actualLoser) && (
+                        <section>
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                                <div className="bg-gradient-to-br from-surface-light to-gray-50 dark:from-surface-dark dark:to-[#18181A] border border-outline-light dark:border-outline-dark rounded-2xl p-6 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-4 text-positive">
+                                        <div className="p-2 bg-positive/10 rounded-lg">
+                                            <TrendingUp className="w-5 h-5" />
+                                        </div>
+                                        <h3 className="font-semibold">領漲指標</h3>
+                                    </div>
+                                    {actualGainer ? (
+                                        <div className="cursor-pointer" onClick={() => setSelectedStock(actualGainer)}>
+                                            <p className="text-2xl font-bold text-on-surface-light dark:text-on-surface-dark mb-1">{actualGainer.name}</p>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-xl font-medium text-positive">{actualGainer.price.toFixed(2)}</span>
+                                                <span className="text-sm font-semibold text-positive">+{actualGainer.changePercent.toFixed(2)}%</span>
+                                            </div>
+                                        </div>
+                                    ) : <p className="text-secondary-light dark:text-secondary-dark">目前無上漲股票</p>}
+                                </div>
+                                <div className="bg-gradient-to-br from-surface-light to-gray-50 dark:from-surface-dark dark:to-[#18181A] border border-outline-light dark:border-outline-dark rounded-2xl p-6 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-4 text-negative">
+                                        <div className="p-2 bg-negative/10 rounded-lg">
+                                            <TrendingDown className="w-5 h-5" />
+                                        </div>
+                                        <h3 className="font-semibold">領跌指標</h3>
+                                    </div>
+                                    {actualLoser ? (
+                                        <div className="cursor-pointer" onClick={() => setSelectedStock(actualLoser)}>
+                                            <p className="text-2xl font-bold text-on-surface-light dark:text-on-surface-dark mb-1">{actualLoser.name}</p>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-xl font-medium text-negative">{actualLoser.price.toFixed(2)}</span>
+                                                <span className="text-sm font-semibold text-negative">{actualLoser.changePercent.toFixed(2)}%</span>
+                                            </div>
+                                        </div>
+                                    ) : <p className="text-secondary-light dark:text-secondary-dark">目前無下跌股票</p>}
+                                </div>
+                                <div className="bg-gradient-to-br from-surface-light to-gray-50 dark:from-surface-dark dark:to-[#18181A] border border-outline-light dark:border-outline-dark rounded-2xl p-6 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-4 text-brand-orange">
+                                        <div className="p-2 bg-brand-orange/10 rounded-lg">
+                                            <Activity className="w-5 h-5" />
+                                        </div>
+                                        <h3 className="font-semibold">監控股數</h3>
+                                    </div>
+                                    <div>
+                                        <p className="text-4xl font-bold text-on-surface-light dark:text-on-surface-dark mb-1">{stocks.length}</p>
+                                        <p className="text-sm text-secondary-light dark:text-secondary-dark">檔股票即時更新中</p>
+                                    </div>
+                                </div>
+                             </div>
+                        </section>
+                     )}
+
                     {searchTerm ? (
                         <section>
                             <SectionHeader onRefresh={() => performFetch()} isRefreshing={isRefreshing}>搜尋結果</SectionHeader>
