@@ -37,6 +37,9 @@ const ANALYSIS_SCHEMA = {
 
 // FIX: Always use process.env.API_KEY directly in functions as per Gemini API coding guidelines.
 export const analyzeNews = async (newsText: string): Promise<AnalysisResult> => {
+    if (!process.env.API_KEY || process.env.API_KEY === 'undefined') {
+        throw new Error("系統未配置有效的 API 金鑰。請確認已在部署平台 (如 Cloudflare) 設定 GEMINI_API_KEY 環境變數再重新部署。");
+    }
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const prompt = `你是一位資深的台灣股市與產業分析師。請僅根據以下提供的新聞文章，以繁體中文進行深度剖析，並嚴格按照指定的 JSON 格式回傳結果。
@@ -72,8 +75,12 @@ ${newsText}
 
     } catch (error) {
         console.error("Error analyzing news with Gemini API:", error);
+        const ObjectMsg = error instanceof Error ? error.message : String(error);
+        if (ObjectMsg.includes('API key not valid')) {
+            throw new Error("AI API 金鑰無效。請確認 Cloudflare Pages 的 GEMINI_API_KEY 環境變數是否正確。");
+        }
         if (error instanceof Error) {
-           throw new Error(`AI 分析失敗: ${error.message}`);
+           throw new Error(`AI 分析失敗 (${error.name}): ${error.message}`);
         }
         throw new Error("AI 分析時發生未知錯誤。");
     }
@@ -81,6 +88,9 @@ ${newsText}
 
 // FIX: Always use process.env.API_KEY directly in functions as per Gemini API coding guidelines.
 export const fetchNewsWithGemini = async (stockName: string, stockCode: string): Promise<NewsArticle> => {
+    if (!process.env.API_KEY || process.env.API_KEY === 'undefined') {
+        throw new Error("系統未配置有效的 API 金鑰。請確認已在部署平台 (如 Cloudflare) 設定 GEMINI_API_KEY 環境變數再重新部署。");
+    }
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const prompt = `你是一位頂尖的財經新聞蒐集專家，專精於台灣股市。你的任務是使用網路搜尋，為台灣股票「${stockName} (${stockCode})」找出**今天或最近 3 天內最重要的一篇**財經新聞。
@@ -115,7 +125,11 @@ export const fetchNewsWithGemini = async (stockName: string, stockCode: string):
 
     } catch (error) {
          console.error("Error fetching news with Gemini API:", error);
-        throw new Error("AI 搜尋新聞時發生錯誤，請稍後再試。");
+         const msg = error instanceof Error ? error.message : String(error);
+         if (msg.includes('API key not valid')) {
+             throw new Error("AI API 金鑰無效 (API key not valid)。請在 Cloudflare Pages 的環境變數中，確認 GEMINI_API_KEY 的值是否正確無誤。");
+         }
+        throw new Error(`AI 自動搜尋新聞失敗: ${msg}`);
     }
 };
 
@@ -142,6 +156,9 @@ const FINANCIAL_ANALYSIS_SCHEMA = {
 
 // FIX: Always use process.env.API_KEY directly in functions as per Gemini API coding guidelines.
 export const getAIFinancialAnalysis = async (stockName: string, stockCode: string): Promise<FinancialAnalysis> => {
+    if (!process.env.API_KEY || process.env.API_KEY === 'undefined') {
+        throw new Error("系統未配置有效的 API 金鑰。請確認已在部署平台 (如 Cloudflare) 設定 GEMINI_API_KEY 環境變數再重新部署。");
+    }
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const fetchDataPrompt = `你是一位頂尖的財經數據分析師。請使用搜尋，為台灣股票「${stockName} (${stockCode})」找出最近 4 個季度的財報關鍵數據。
@@ -198,7 +215,11 @@ export const getAIFinancialAnalysis = async (stockName: string, stockCode: strin
 
     } catch (error) {
         console.error("Error fetching financial data with Gemini:", error);
-        throw new Error("AI 無法獲取結構化的財務數據，請稍後再試。");
+        const msg = error instanceof Error ? error.message : String(error);
+        if (msg.includes('API key not valid')) {
+            throw new Error("AI API 金鑰無效。請確認 Cloudflare Pages 的 GEMINI_API_KEY 環境變數是否正確。");
+        }
+        throw new Error(`AI 獲取結構化的財務數據失敗: ${msg}`);
     }
 
     const analysisPrompt = `你是一位專業的台灣股市分析師。請根據以下提供的季度財報數據，為股票「${stockName}」撰寫財務趨勢分析。
@@ -221,6 +242,10 @@ ${JSON.stringify(financialData, null, 2)}`;
         return { data: financialData, summary: analysisJson.summary, strengths: analysisJson.strengths, weaknesses: analysisJson.weaknesses, sources };
     } catch (error) {
         console.error("Error generating financial analysis with Gemini:", error);
-        throw new Error("AI 無法生成財務分析總結，請稍後再試。");
+        const msg = error instanceof Error ? error.message : String(error);
+        if (msg.includes('API key not valid')) {
+            throw new Error("AI API 金鑰無效。請確認 Cloudflare Pages 的 GEMINI_API_KEY 環境變數是否正確。");
+        }
+        throw new Error(`AI 財務分析生成失敗: ${msg}`);
     }
 };

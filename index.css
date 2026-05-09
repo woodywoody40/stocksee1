@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #ea580c;
+
+  --color-background-light: #f8f9fa;
+  --color-background-dark: #111113;
+  
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #1c1c1e;
+
+  --color-outline-light: #e5e7eb;
+  --color-outline-dark: rgba(255, 255, 255, 0.1);
+
+  --color-on-primary: #ffffff;
+  --color-on-background-light: #1f2937;
+  --color-on-background-dark: #f4f4f5;
+  --color-on-surface-light: #1f2937;
+  --color-on-surface-dark: #f4f4f5;
+
+  --color-secondary-light: #6b7280;
+  --color-secondary-dark: #a1a1aa;
+
+  --color-tertiary-light: #9ca3af;
+  --color-tertiary-dark: #52525b;
+
+  --color-positive: #ef4444;
+  --color-negative: #22c55e;
+  --color-brand-gold: #f59e0b;
+  --color-brand-orange: #f97316;
+  --color-surface-dark-alt: #27272a;
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  --shadow-glow-orange: 0 0 30px rgba(249, 115, 22, 0.25);
+  --shadow-glow-positive: 0 0 20px rgba(239, 68, 68, 0.2);
+  --shadow-glow-negative: 0 0 20px rgba(34, 197, 94, 0.2);
+
+  --animate-fade-in: fade-in 0.3s ease-out forwards;
+  --animate-slide-up-fade: slide-up-fade 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  --animate-backdrop-fade-in: backdrop-fade-in 0.3s ease-out;
+  --animate-stagger-in: stagger-in 0.5s ease-out forwards;
+  --animate-flip-in: flip-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  --animate-flip-out: flip-out 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+  @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes slide-up-fade {
+    0% { opacity: 0; transform: translateY(16px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes backdrop-fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes stagger-in {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes flip-in {
+    0% { transform: rotateY(75deg) scale(0.8); opacity: 0; }
+    100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+  }
+  @keyframes flip-out {
+    0% { transform: rotateY(0deg) scale(1); opacity: 1; }
+    100% { transform: rotateY(-75deg) scale(0.8); opacity: 0; }
+  }
+}
+
+/* Custom scrollbar for modal content */
+.modal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

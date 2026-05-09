@@ -128,8 +128,13 @@ export const fetchHistoricalData = async (code: string): Promise<HistoricalDataP
 
             for (const response of responses) {
                 if (response.ok) {
-                    const json = await response.json();
-                    combinedData.push(...currentSource.getData(json));
+                    try {
+                        const json = await response.json();
+                        combinedData.push(...currentSource.getData(json));
+                    } catch (e) {
+                         // silently ignore parsing errors for this particular URL/proxy
+                         console.warn("Failed to parse JSON for historical data:", e);
+                    }
                 }
             }
             
