@@ -36,7 +36,7 @@ const LoadingSkeleton: React.FC = () => (
 );
 
 const MetricCard: React.FC<{ title: string; unit: string; data: { label: string; value: number }[] }> = ({ title, unit, data }) => (
-    <div className="bg-surface-dark-alt/60 p-3 rounded-xl border border-outline-dark hover:border-brand-orange/50 transition-colors">
+    <div className="glass-panel p-4 rounded-xl border border-white/20 hover:border-brand-orange/50 transition-colors">
         <div className="flex justify-between items-baseline">
             <h4 className="text-sm font-semibold text-on-surface-dark">{title}</h4>
             <p className="text-xs text-secondary-dark">{unit}</p>
@@ -106,7 +106,7 @@ const FinancialAnalysisView: React.FC<FinancialAnalysisViewProps> = ({ stockCode
                         <motion.div 
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="bg-positive/5 border border-positive/20 p-4 rounded-xl"
+                            className="glass-panel bg-positive/10 border border-positive/30 p-4 rounded-xl"
                         >
                             <h5 className="flex items-center gap-2 text-positive font-bold mb-3 text-sm">
                                 <TrendingUp className="w-4 h-4" /> 財報亮點
@@ -125,7 +125,7 @@ const FinancialAnalysisView: React.FC<FinancialAnalysisViewProps> = ({ stockCode
                         <motion.div 
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="bg-negative/5 border border-negative/20 p-4 rounded-xl"
+                            className="glass-panel bg-negative/10 border border-negative/30 p-4 rounded-xl"
                         >
                             <h5 className="flex items-center gap-2 text-negative font-bold mb-3 text-sm">
                                 <AlertTriangle className="w-4 h-4" /> 隱患與劣勢

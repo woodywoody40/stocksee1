@@ -77,7 +77,7 @@ const StockCard: React.FC<StockCardProps> = ({ stock, isWatched, onToggleWatchli
 
     return (
         <div 
-            className="relative bg-surface-light dark:bg-surface-dark border border-outline-light dark:border-outline-dark rounded-2xl p-4 cursor-pointer transition-all duration-300 ease-in-out group hover:-translate-y-1 hover:shadow-xl shadow-lg shadow-gray-100 dark:shadow-none"
+            className="relative glass-panel rounded-2xl p-5 cursor-pointer transition-all duration-300 ease-in-out group hover:-translate-y-1 hover:shadow-glow-orange"
             onClick={() => onCardClick(stock)}
             role="button"
             aria-label={`查看 ${stock.name} 詳細資訊`}

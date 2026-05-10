@@ -194,7 +194,7 @@ const MarketView: React.FC<MarketViewProps> = ({ onStartAnalysis }) => {
                      {!searchTerm && (actualGainer || actualLoser) && (
                         <section>
                              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-                                <div className="bg-gradient-to-br from-surface-light to-gray-50 dark:from-surface-dark dark:to-[#18181A] border border-outline-light dark:border-outline-dark rounded-2xl p-6 shadow-sm">
+                                <div className="glass-panel rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-glass">
                                     <div className="flex items-center gap-3 mb-4 text-positive">
                                         <div className="p-2 bg-positive/10 rounded-lg">
                                             <TrendingUp className="w-5 h-5" />
@@ -211,7 +211,7 @@ const MarketView: React.FC<MarketViewProps> = ({ onStartAnalysis }) => {
                                         </div>
                                     ) : <p className="text-secondary-light dark:text-secondary-dark">目前無上漲股票</p>}
                                 </div>
-                                <div className="bg-gradient-to-br from-surface-light to-gray-50 dark:from-surface-dark dark:to-[#18181A] border border-outline-light dark:border-outline-dark rounded-2xl p-6 shadow-sm">
+                                <div className="glass-panel rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-glass">
                                     <div className="flex items-center gap-3 mb-4 text-negative">
                                         <div className="p-2 bg-negative/10 rounded-lg">
                                             <TrendingDown className="w-5 h-5" />
@@ -228,7 +228,7 @@ const MarketView: React.FC<MarketViewProps> = ({ onStartAnalysis }) => {
                                         </div>
                                     ) : <p className="text-secondary-light dark:text-secondary-dark">目前無下跌股票</p>}
                                 </div>
-                                <div className="bg-gradient-to-br from-surface-light to-gray-50 dark:from-surface-dark dark:to-[#18181A] border border-outline-light dark:border-outline-dark rounded-2xl p-6 shadow-sm">
+                                <div className="glass-panel rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-glass">
                                     <div className="flex items-center gap-3 mb-4 text-brand-orange">
                                         <div className="p-2 bg-brand-orange/10 rounded-lg">
                                             <Activity className="w-5 h-5" />

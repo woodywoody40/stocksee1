@@ -129,7 +129,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
     
     return (
         <div className="max-w-4xl mx-auto space-y-8 pb-12">
-            <div className="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+            <div className="glass-panel p-6 sm:p-8 rounded-2xl shadow-lg transition-all duration-300">
                  <div className="mb-6">
                     <h2 className="text-2xl font-bold text-brand-orange flex items-center gap-2">
                         <Zap className="w-6 h-6" />
@@ -185,7 +185,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                 {result && !isLoading && (
                     <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                         {/* Summary Card */}
-                        <div className="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl shadow-lg border border-brand-orange/20 relative overflow-hidden">
+                        <div className="glass-panel p-6 sm:p-8 rounded-2xl shadow-glow-orange border border-brand-orange/30 relative overflow-hidden">
                              <div className="absolute top-0 right-0 p-8 opacity-5">
                                  <Zap className="w-32 h-32 text-brand-orange" />
                              </div>
@@ -202,7 +202,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
 
                         {/* Top Metrics Row */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark flex items-center gap-6">
+                            <div className="glass-panel p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center gap-6">
                                 <div className="p-4 bg-surface-dark-alt rounded-2xl">
                                     {icons[result.sentiment]()}
                                 </div>
@@ -213,7 +213,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                                     </p>
                                 </div>
                             </div>
-                            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark flex items-center gap-6">
+                            <div className="glass-panel p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center gap-6">
                                 <div className="p-4 bg-surface-dark-alt rounded-2xl">
                                     <Percent className={`w-8 h-8 ${getScoreColor(result.score)}`} />
                                 </div>
@@ -231,7 +231,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
 
                         {/* Impact and Risks */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+                            <div className="glass-panel p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300">
                                 <h4 className="font-bold text-on-surface-light dark:text-on-surface-dark mb-4 flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-brand-gold" />
                                     具體影響分析
@@ -246,7 +246,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                                 </ul>
                             </div>
                             <div className="space-y-6">
-                                <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+                                <div className="glass-panel p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300">
                                     <h4 className="font-bold text-on-surface-light dark:text-on-surface-dark mb-3 flex items-center gap-2">
                                         <AlertTriangle className="w-5 h-5 text-brand-orange" />
                                         機會與風險
@@ -256,7 +256,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                                     </p>
                                 </div>
                                 {result.related_sectors.length > 0 && (
-                                    <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-outline-light dark:border-outline-dark">
+                                    <div className="glass-panel p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300">
                                         <h4 className="font-bold text-on-surface-light dark:text-on-surface-dark mb-3 flex items-center gap-2">
                                             <Blocks className="w-5 h-5 text-primary" />
                                             連動產業板塊
@@ -283,7 +283,7 @@ const AiAnalysisView: React.FC<AiAnalysisViewProps> = ({ analysisTarget, isFetch
                         <LinkIcon className="w-4 h-4" />
                         相關新聞來源
                     </h3>
-                    <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-outline-light dark:border-outline-dark shadow-sm">
+                    <div className="glass-panel p-4 rounded-xl shadow-md">
                         <ul className="space-y-2">
                             {sources.map((source, index) => (
                                 <li key={index} className="text-sm text-secondary-light dark:text-secondary-dark truncate flex items-center gap-2 relative pl-4 before:content-[''] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-brand-orange before:rounded-full">

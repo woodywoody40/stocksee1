@@ -16,7 +16,7 @@ const UserInput: React.FC<{
     setProfile: (p: UserProfile) => void;
     color: string;
 }> = ({ label, profile, setProfile, color }) => (
-    <div className={`p-6 rounded-2xl border bg-surface-light dark:bg-surface-dark border-outline-light dark:border-outline-dark shadow-xl space-y-4`}>
+    <div className={`p-6 rounded-2xl border glass-panel shadow-xl space-y-4`}>
         <div className="flex items-center gap-2 mb-2">
             <div className={`w-3 h-8 rounded-full ${color}`}></div>
             <h3 className="text-xl font-bold">{label}</h3>
@@ -94,7 +94,7 @@ const FutureSimulatorView: React.FC = () => {
     const renderScore = (score: number) => {
         const colorClass = score > 80 ? 'text-positive' : score > 50 ? 'text-brand-gold' : 'text-negative';
         return (
-            <div className="flex flex-col items-center justify-center p-6 bg-surface-dark-alt/50 rounded-2xl border border-outline-dark">
+            <div className="flex flex-col items-center justify-center p-6 glass-panel rounded-2xl border border-outline-light dark:border-outline-dark shadow-md">
                 <span className="text-sm font-bold text-secondary-dark mb-2 uppercase tracking-widest">契合度評分</span>
                 <div className={`text-6xl font-black ${colorClass}`}>{score}</div>
                 <div className="w-full bg-background-dark rounded-full h-2 mt-4 overflow-hidden">
@@ -139,7 +139,7 @@ const FutureSimulatorView: React.FC = () => {
 
             {result && !isLoading && (
                 <div className="mt-12 space-y-12 animate-slide-up-fade">
-                    <div className="p-8 bg-surface-light dark:bg-surface-dark rounded-3xl border border-outline-light dark:border-outline-dark shadow-2xl">
+                    <div className="p-8 glass-panel rounded-3xl border border-outline-light dark:border-outline-dark shadow-2xl">
                         <div className="inline-block px-4 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full mb-4 uppercase tracking-widest">模擬情境</div>
                         <h3 className="text-3xl font-black mb-2">{result.scenario_title}</h3>
                         <p className="text-secondary-light dark:text-secondary-dark italic border-l-4 border-primary/30 pl-4 py-1 mb-8">
@@ -174,7 +174,7 @@ const FutureSimulatorView: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 p-8 bg-surface-light dark:bg-surface-dark rounded-3xl border border-outline-light dark:border-outline-dark shadow-xl">
+                        <div className="lg:col-span-2 p-8 glass-panel rounded-3xl border border-outline-light dark:border-outline-dark shadow-xl">
                             <h4 className="text-xl font-bold mb-4 flex items-center gap-2">
                                 <span className="text-primary">✦</span> 命運點評
                             </h4>
